@@ -1,8 +1,9 @@
 from PyQt6.QtWidgets import (
     QWidget, QHBoxLayout, QVBoxLayout, 
-    QPushButton, QFrame, QStackedWidget
+    QPushButton, QFrame, QStackedWidget, QLabel
 )
 
+from PyQt6.QtCore import QTimer
 
 # Import our page classes
 from ui.pages.home_page import HomePage
@@ -12,6 +13,8 @@ from ui.pages.help_page import HelpPage
 from ui.pages.all_cards_page import AllCards
 from ui.pages.create_flashcard_page import CreateFlashcard
 from ui.pages.existing_flashcard_page import ExistingFlashcard
+from ui.pages.flashcard_study_page import FlashcardStudyPage
+from ui.components.pomodoro_timer import PomodoroTimer
 
 # Import our visual classes
 from ui.visual.animations import SidebarAnimations
@@ -23,51 +26,107 @@ class MainWindow(QWidget):
         self.sidebar_collapsed = True
         self.sidebar_styles = get_sidebar_styles()
         self.main_styles = get_main_window_styles()
+        
+        # Initialize timer first
+        self.pomodoro_timer = PomodoroTimer(self)
+        
         self.setup_ui()
         self.setup_animation()
-        
+        self.resize(1000, 800)
+
     def setup_ui(self):
         # Main layout
         main_layout = QHBoxLayout()
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
-        self.setStyleSheet(self.main_styles["main_layout"])       
+        self.setStyleSheet(self.main_styles["main_layout"])
 
-        # Create sidebar as a solid frame/box
+        # Create sidebar
         self.sidebar = QFrame()
-        self.sidebar.setMinimumWidth(0)  # Start collapsed
+        self.sidebar.setMinimumWidth(0)
         self.sidebar.setMaximumWidth(0)
         self.sidebar.setStyleSheet(self.sidebar_styles["sidebar_collapsed"])
-        
         self.setup_sidebar_content()
-        
+
         # Create main content widget
         self.main_content_widget = QWidget()
         main_content_layout = QVBoxLayout(self.main_content_widget)
         main_content_layout.setContentsMargins(0, 0, 0, 0)
         main_content_layout.setSpacing(0)
+
+        # Header with timer display
+        header_layout = QHBoxLayout()
         
-        # Create and add burger button to main content
+        # Burger button
         self.toggle_btn = QPushButton("☰")
         self.toggle_btn.setFixedSize(45, 45)
         self.toggle_btn.setStyleSheet(self.sidebar_styles["toggle_button"])
         self.toggle_btn.clicked.connect(self.toggle_sidebar)
-        
-        # Create stacked widget for main app pages
+        header_layout.addWidget(self.toggle_btn)
+
+        # Timer display (top-right)
+        header_layout.addStretch()
+        self.timer_display = QLabel("Study: 25:00")
+        self.timer_display.setStyleSheet("color: #A6E3A1; font-size: 14px; font-weight: bold; padding: 10px;")
+        header_layout.addWidget(self.timer_display)
+
+        # Pomodoro control button
+        self.pomodoro_btn = QPushButton("▶ Start Timer")
+        self.pomodoro_btn.setFixedSize(100, 35)
+        self.pomodoro_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #A6E3A1;
+                color: #1E1E2E;
+                border: none;
+                border-radius: 15px;
+                font-weight: bold;
+                padding: 5px;
+            }
+            QPushButton:hover {
+                background-color: #94D2A2;
+            }
+        """)
+        self.pomodoro_btn.clicked.connect(self.toggle_pomodoro_timer)
+        header_layout.addWidget(self.pomodoro_btn)
+
+        # Timer settings button
+        self.timer_settings_btn = QPushButton("⚙")
+        self.timer_settings_btn.setFixedSize(35, 35)
+        self.pomodoro_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #585B70;
+                color: #CDD6F4;
+                border: none;
+                border-radius: 15px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #6C7086;
+            }
+        """)
+        self.timer_settings_btn.clicked.connect(self.show_timer_settings)
+        header_layout.addWidget(self.timer_settings_btn)
+
+
+        # Create stacked widget
         self.pages_stack = QStackedWidget()
         self.create_pages()
-        
-        # Add burger button and pages to main content
-        main_content_layout.addWidget(self.toggle_btn)
+
+        # Add to main layout
+        main_content_layout.addLayout(header_layout)
         main_content_layout.addWidget(self.pages_stack)
-        
+
         # Add sidebar and main content to main layout
         main_layout.addWidget(self.sidebar)
         main_layout.addWidget(self.main_content_widget)
-        
+
         self.setLayout(main_layout)
         self.setWindowTitle("Remora")
         self.resize(1000, 800)
+
+    def update_timer_display(self, text):
+        """Update the timer display text"""
+        self.timer_display.setText(text)
     
     def setup_sidebar_content(self):
         # Create a layout for the sidebar box
@@ -96,11 +155,11 @@ class MainWindow(QWidget):
         self.profile_page = ProfilePage()
         self.settings_page = SettingsPage()
         self.help_page = HelpPage()
-        self.all_cards_page = AllCards()
+        self.all_cards_page = AllCards(self)
         self.create_flashcard_page = CreateFlashcard(self)
         self.existing_flashcard_page = ExistingFlashcard(self)
+        self.flashcard_study_page = FlashcardStudyPage(self, None)
 
-        
         self.pages_stack.addWidget(self.home_page)         # index 0
         self.pages_stack.addWidget(self.profile_page)      # index 1
         self.pages_stack.addWidget(self.settings_page)     # index 2
@@ -108,7 +167,8 @@ class MainWindow(QWidget):
         self.pages_stack.addWidget(self.help_page)          # index 4
         self.pages_stack.addWidget(self.create_flashcard_page) # index 5
         self.pages_stack.addWidget(self.existing_flashcard_page) # index 6
-    
+        self.pages_stack.addWidget(self.flashcard_study_page) # index 7
+
     def setup_animation(self):
         # Initialize animations
         self.sidebar_animations = SidebarAnimations(self.sidebar)
@@ -139,7 +199,7 @@ class MainWindow(QWidget):
     def show_page(self, page_index):
         self.pages_stack.setCurrentIndex(page_index)
     
-    # NEW METHODS FOR HOME PAGE BUTTONS
+    # NEW PAGES THROUGH BUTTONS
     def show_existing_flashcards(self):
         """Show the Existing Flashcard page (index 6)"""
         self.show_page(6)  # Existing Flashcards is at index 6
@@ -151,3 +211,40 @@ class MainWindow(QWidget):
         self.show_page(5)  # Create Flashcards is at index 5
         if not self.sidebar_collapsed:
             self.collapse_sidebar()
+
+    def show_flashcard_study_with_set(self, flashcard_set):
+        """Update study page with specific flashcard set and show it"""
+        try:
+            # Simply update the existing study page and show it
+            self.flashcard_study_page.flashcard_set = flashcard_set
+            self.flashcard_study_page.current_card_index = 0
+            self.flashcard_study_page.is_flipped = False
+            
+            # UPDATE THE SET NAME LABEL
+            self.flashcard_study_page.set_name_label.setText(flashcard_set['set_name'])
+            
+            self.flashcard_study_page.load_card(0)
+            
+            self.show_page(7)
+            
+            if not self.sidebar_collapsed:
+                self.collapse_sidebar()
+                
+        except Exception as e:
+            print(f"Error: {e}")
+
+    def toggle_pomodoro_timer(self):
+        """Toggle between start and pause for the Pomodoro timer"""
+        if self.pomodoro_timer.timer_running:
+            # Timer is running, so pause it
+            if self.pomodoro_timer.pause_timer():
+                self.pomodoro_btn.setText("▶ Resume")
+        else:
+            # Timer is paused/stopped, so start it
+            if self.pomodoro_timer.start_timer():
+                self.pomodoro_btn.setText("⏸ Pause")
+
+    def show_timer_settings(self):
+        """Show the Pomodoro timer settings dialog"""
+        self.pomodoro_timer.show_settings(self)
+

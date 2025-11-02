@@ -1,6 +1,8 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QLineEdit, QTextEdit, QScrollArea, QFrame
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QLineEdit, QTextEdit, QScrollArea, QFrame, QMessageBox
 from PyQt6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve
+from PyQt6.QtGui import QPixmap
 from ui.visual.styles.styles import get_create_flashcard_styles
+from utils.path_helper import get_asset_path
 
 
 class CreateFlashcard(QWidget):
@@ -139,44 +141,117 @@ class CreateFlashcard(QWidget):
         scrollbar.setValue(scrollbar.maximum())
 
     def save_all_flashcards(self):
-        #Collect and save all flashcards from the form
-        self.flashcards = []
-        
-        # Loop through all card frames in scroll area
-        for i in range(self.scroll_layout.count() - 1):  # -1 to exclude the stretch
-            item = self.scroll_layout.itemAt(i)
-            if item and item.widget() and isinstance(item.widget(), QFrame):
-                frame = item.widget()
-                question = frame.question_input.text().strip()
-                answer = frame.answer_input.toPlainText().strip()
+        try:
+            # Collect flashcard data from the form
+            self.flashcards = []
+            set_name = self.name_input.text().strip()
+            
+            # Validate set name
+            if not set_name:
+                QMessageBox.warning(self, "Missing Set Name", "Please enter a name for your flashcard set.")
+                return
+            
+            # Loop through all card frames and collect data
+            for i in range(self.scroll_layout.count() - 1):
+                item = self.scroll_layout.itemAt(i)
+                if item and item.widget():
+                    widget = item.widget()
+                    
+                    # ONLY process QFrame widgets (the card containers)
+                    if isinstance(widget, QFrame) and hasattr(widget, 'question_input'):
+                        question = widget.question_input.text().strip()
+                        answer = widget.answer_input.toPlainText().strip()
+                        
+                        if question and answer:
+                            card_data = {
+                                'question': question,
+                                'answer': answer
+                            }
+                            self.flashcards.append(card_data)
+            
+            # Validate we have at least one flashcard
+            if not self.flashcards:
+                QMessageBox.warning(self, "No Flashcards", "Please fill in at least one flashcard.")
+                return
+            
+            # Use controller to save the flashcard set
+            from core.controller import FlashcardController
+            controller = FlashcardController()
+            error_message = controller.create_flashcard_set(set_name, self.flashcards)
+            
+            # Check if save was successful
+            if error_message:
+                QMessageBox.critical(self, "Save Error", f"Failed to save flashcard set:\n{error_message}")
+            else:
+                # CUSTOM SUCCESS MESSAGE BOX
+                self.show_save_success(set_name, len(self.flashcards))
+                self.clear_form()
+                self.name_input.clear()
                 
-                # Only save cards that have both question and answer
-                if question and answer:
-                    card_data = {
-                        'number': frame.card_number,
-                        'question': question,
-                        'answer': answer
-                    }
-                    self.flashcards.append(card_data)
+        except Exception as e:
+            QMessageBox.critical(self, "Critical Error", f"The app encountered an error:\n{str(e)}")
+
+    def show_save_success(self, set_name, card_count):
+
+        msg_box = QMessageBox(self)
+        msg_box.setWindowTitle("Success!")
+        msg_box.setText(f"Flashcard set '{set_name}' saved successfully!")
+        msg_box.setInformativeText(f"Total cards saved: {card_count}")
         
-        # Process the saved flashcards
-        if self.flashcards:
-            print(f"Saved {len(self.flashcards)} flashcards:")
-            for card in self.flashcards:
-                print(f"Card #{card['number']}: Q: {card['question']}, A: {card['answer']}")
-            self.clear_form()
+        # Apply the success style
+        msg_box.setStyleSheet(self.styles["success_message_box"])
+        
+        # Load custom success icon
+        icon_path = get_asset_path("success.png")  # Use your success icon
+        custom_icon = QPixmap(icon_path)
+        
+        if not custom_icon.isNull():
+            msg_box.setIconPixmap(custom_icon.scaled(64, 64, Qt.AspectRatioMode.KeepAspectRatio))
         else:
-            print("Please fill at least one flashcard")
-    
+            msg_box.setIcon(QMessageBox.Icon.Information)
+        
+        msg_box.setStandardButtons(QMessageBox.StandardButton.Ok)
+        msg_box.exec()
+
     def clear_form(self):
-        """Clear all flashcard inputs but keep the form structure"""
+        # Clear all flashcard inputs but keep the form structure
         for i in range(self.scroll_layout.count() - 1):
             item = self.scroll_layout.itemAt(i)
-            if item and item.widget() and isinstance(item.widget(), QFrame):
-                frame = item.widget()
-                frame.question_input.clear()
-                frame.answer_input.clear()
-    
+            if item and item.widget():
+                widget = item.widget()
+                # Only clear QFrame widgets (the card containers)
+                if isinstance(widget, QFrame):
+                    # Check if the frame has the question_input attribute
+                    if hasattr(widget, 'question_input'):
+                        widget.question_input.clear()
+                    if hasattr(widget, 'answer_input'):
+                        widget.answer_input.clear()
+
     def go_back(self):
-        """Return to the home page"""
-        self.main_window.show_page(0)
+        """Show confirmation dialog with custom icon"""
+        from PyQt6.QtWidgets import QMessageBox
+        from PyQt6.QtGui import QPixmap
+        from utils.path_helper import get_asset_path
+        
+        msg_box = QMessageBox(self)
+        msg_box.setWindowTitle("Confirm Cancel")
+        msg_box.setText("Are you sure you want to cancel?")
+        msg_box.setInformativeText("All unsaved changes will be lost.")
+        
+        # Apply the warning style
+        msg_box.setStyleSheet(self.styles["warning_message_box"])
+        
+        # Load custom icon using path helper
+        icon_path = get_asset_path("!.png")
+        custom_icon = QPixmap(icon_path)
+        
+        if not custom_icon.isNull():
+            msg_box.setIconPixmap(custom_icon.scaled(64, 64, Qt.AspectRatioMode.KeepAspectRatio))
+        else:
+            msg_box.setIcon(QMessageBox.Icon.Warning)
+        
+        msg_box.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        msg_box.setDefaultButton(QMessageBox.StandardButton.No)
+        
+        if msg_box.exec() == QMessageBox.StandardButton.Yes:
+            self.main_window.show_page(0)
