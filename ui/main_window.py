@@ -6,6 +6,10 @@ from PyQt6.QtWidgets import (
 )
 
 from PyQt6.QtCore import QTimer
+from PyQt6.QtGui import QKeySequence
+from PyQt6.QtWidgets import QShortcut, QMessageBox
+from PyQt6.QtCore import Qt
+
 
 # Import our page classes
 from ui.pages.home_page import HomePage
@@ -172,6 +176,48 @@ class MainWindow(QWidget):
         
         sidebar_layout.addStretch()
         self.sidebar.setLayout(sidebar_layout)
+
+    def setup_shortcuts(self):
+    # Quit app----------------------------------------------------->
+    shortcut_quit = QShortcut(QKeySequence("Ctrl+Q"), self)
+    shortcut_quit.setContext(Qt.ShortcutContext.ApplicationShortcut)
+    shortcut_quit.activated.connect(self.close)
+
+    # Navigate to Home
+    shortcut_home = QShortcut(QKeySequence("Ctrl+H"), self)
+    shortcut_home.setContext(Qt.ShortcutContext.ApplicationShortcut)
+    shortcut_home.activated.connect(lambda: self.show_page(0))
+
+    # Navigate to Profile
+    shortcut_profile = QShortcut(QKeySequence("Ctrl+P"), self)
+    shortcut_profile.setContext(Qt.ShortcutContext.ApplicationShortcut)
+    shortcut_profile.activated.connect(lambda: self.show_page(1))
+
+    # Navigate to Settings
+    shortcut_settings = QShortcut(QKeySequence("Ctrl+S"), self)
+    shortcut_settings.setContext(Qt.ShortcutContext.ApplicationShortcut)
+    shortcut_settings.activated.connect(lambda: self.show_page(2))
+
+    # Navigate to Help
+    shortcut_help = QShortcut(QKeySequence("F1"), self)
+    shortcut_help.setContext(Qt.ShortcutContext.ApplicationShortcut)
+    shortcut_help.activated.connect(lambda: self.show_page(4))
+
+    # Open Create Flashcard page
+    shortcut_create_flash = QShortcut(QKeySequence("Ctrl+N"), self)
+    shortcut_create_flash.setContext(Qt.ShortcutContext.ApplicationShortcut)
+    shortcut_create_flash.activated.connect(lambda: self.show_page(5))
+
+    # Flip card (if current page is study page)
+    shortcut_flip = QShortcut(QKeySequence(Qt.Key.Key_Space), self)
+    shortcut_flip.setContext(Qt.ShortcutContext.ApplicationShortcut)
+    shortcut_flip.activated.connect(self.flip_current_card)
+
+    # Next page (Ctrl+Tab)
+    shortcut_next = QShortcut(QKeySequence("Ctrl+Tab"), self)
+    shortcut_next.setContext(Qt.ShortcutContext.ApplicationShortcut)
+    shortcut_next.activated.connect(self.next_page)
+
     
     def create_pages(self):
         # Create instances of our separate page classes and pass main window reference
@@ -296,3 +342,19 @@ class MainWindow(QWidget):
             traceback.print_exc()
             from PyQt6.QtWidgets import QMessageBox
             QMessageBox.critical(self, "Error", f"Failed to start multiple choice: {str(e)}")
+
+   def flip_current_card(self):
+    # Flip first visible card in current study page
+        current_index = self.pages_stack.currentIndex()
+        if current_index == 7:  # FlashcardStudyPage
+        if hasattr(self.flashcard_study_page, "flip_card"):
+            self.flashcard_study_page.flip_card()
+    elif current_index == 8:  # MultipleChoiceStudy
+    # Optionally, handle multiple choice flip if needed
+        pass
+
+   def next_page(self):
+      total = self.pages_stack.count()
+      current = self.pages_stack.currentIndex()
+      next_index = (current + 1) % total
+      self.pages_stack.setCurrentIndex(next_index)
