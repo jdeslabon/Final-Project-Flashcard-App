@@ -66,14 +66,13 @@ class MainWindow(QWidget):
         self.toggle_btn.clicked.connect(self.toggle_sidebar)
         header_layout.addWidget(self.toggle_btn)
 
-        # Timer display (top-right) - START HIDDEN
+        # Timer display (top-right)
         header_layout.addStretch()
         self.timer_display = QLabel("Study: 25:00")
         self.timer_display.setStyleSheet("color: #A6E3A1; font-size: 14px; font-weight: bold; padding: 10px;")
-        self.timer_display.setVisible(False)  # START HIDDEN
         header_layout.addWidget(self.timer_display)
 
-        # Pomodoro control button - START HIDDEN
+        # Pomodoro control button
         self.pomodoro_btn = QPushButton("▶ Start Timer")
         self.pomodoro_btn.setMinimumSize(100, 35)
         self.pomodoro_btn.setStyleSheet("""
@@ -90,13 +89,12 @@ class MainWindow(QWidget):
             }
         """)
         self.pomodoro_btn.clicked.connect(self.toggle_pomodoro_timer)
-        self.pomodoro_btn.setVisible(False)  # START HIDDEN
         header_layout.addWidget(self.pomodoro_btn)
 
-        # Timer settings button - START HIDDEN
+        # Timer settings button
         self.timer_settings_btn = QPushButton("⚙")
         self.timer_settings_btn.setMinimumSize(35, 35)
-        self.timer_settings_btn.setStyleSheet("""
+        self.pomodoro_btn.setStyleSheet("""
             QPushButton {
                 background-color: #585B70;
                 color: #CDD6F4;
@@ -109,8 +107,8 @@ class MainWindow(QWidget):
             }
         """)
         self.timer_settings_btn.clicked.connect(self.show_timer_settings)
-        self.timer_settings_btn.setVisible(False)  # START HIDDEN
         header_layout.addWidget(self.timer_settings_btn)
+
 
         # Create stacked widget
         self.pages_stack = QStackedWidget()
@@ -130,27 +128,6 @@ class MainWindow(QWidget):
     def update_timer_display(self, text):
         # Update the timer display text
         self.timer_display.setText(text)
-        
-        current_page = self.pages_stack.currentIndex()
-        non_learning_pages = [0, 1, 2, 4]  # Home, Profile, Settings, Help
-        
-        if current_page in non_learning_pages:
-            # Special behavior for pages 0,1,2,4
-            if self.pomodoro_timer.timer_running:
-                # Timer running: show only timer display, hide buttons
-                self.timer_display.setVisible(True)
-                self.pomodoro_btn.setVisible(False)
-                self.timer_settings_btn.setVisible(False)
-            else:
-                # Timer NOT running: hide everything
-                self.timer_display.setVisible(False)
-                self.pomodoro_btn.setVisible(False)
-                self.timer_settings_btn.setVisible(False)
-        else:
-            # Other pages: always show everything
-            self.timer_display.setVisible(True)
-            self.pomodoro_btn.setVisible(True)
-            self.timer_settings_btn.setVisible(True)
     
     def setup_sidebar_content(self):
         # Create a layout for the sidebar box
@@ -185,6 +162,7 @@ class MainWindow(QWidget):
         self.flashcard_study_page = FlashcardStudyPage(self, None)
         self.multiple_choice_study_page = MultipleChoiceStudy(self, None) 
 
+    
         self.pages_stack.addWidget(self.home_page)         # index 0
         self.pages_stack.addWidget(self.profile_page)      # index 1
         self.pages_stack.addWidget(self.settings_page)     # index 2
@@ -224,8 +202,6 @@ class MainWindow(QWidget):
     
     def show_page(self, page_index):
         self.pages_stack.setCurrentIndex(page_index)
-        # Update timer visibility when page changes
-        self.update_timer_display(self.timer_display.text())
     
     # NEW PAGES THROUGH BUTTONS
     def show_existing_flashcards(self):
@@ -271,9 +247,6 @@ class MainWindow(QWidget):
             # Timer is paused/stopped, so start it
             if self.pomodoro_timer.start_timer():
                 self.pomodoro_btn.setText("⏸ Pause")
-        
-        # Update visibility after toggle
-        self.update_timer_display(self.timer_display.text())
 
     def show_timer_settings(self):
         # Show the Pomodoro timer settings dialog
@@ -296,3 +269,6 @@ class MainWindow(QWidget):
             traceback.print_exc()
             from PyQt6.QtWidgets import QMessageBox
             QMessageBox.critical(self, "Error", f"Failed to start multiple choice: {str(e)}")
+
+
+    
