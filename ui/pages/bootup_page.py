@@ -11,7 +11,11 @@ class BootupPage(QWidget):
     def __init__(self, on_finish_callback=None):
         super().__init__()
         self.on_finish_callback = on_finish_callback
+<<<<<<< HEAD
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint) #Added
+=======
+        self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
+>>>>>>> 1d584329b392621e6985e4dc5ceee3aeada41a5c
         self.fade = FadeAnimation(self)
         self.init_ui()
         self.simulate_loading()
@@ -65,4 +69,5 @@ class BootupPage(QWidget):
             self.timer.stop()
             self.fade.fade_out(self.on_finish_callback)
             
+
 
