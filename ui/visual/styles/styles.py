@@ -2,6 +2,16 @@
 from PyQt6.QtGui import QFont
 
 FONT_LARGE_BOLD = QFont("Poppins", 24, QFont.Weight.Bold) #jose
+FONT_MEDIUM = QFont("Poppins", 16)
+FONT_SUBTITLE = QFont("Poppins", 14, QFont.Weight.Medium)
+FONT_BUTTON = QFont("Poppins", 12, QFont.Weight.Bold)
+FONT_LABEL = QFont("Poppins", 12)
+
+# Theme colors
+COLOR_PRIMARY = "#434190"
+COLOR_ACCENT = "#FC483D"
+COLOR_BG_LIGHT = "#FFFFFF"
+COLOR_BG_DARK = "#1A202C"
 
 #stylesheet for loading bar, jose
 progress_bar_styles = """
@@ -16,6 +26,91 @@ QProgressBar::chunk {
     border-radius: 10px;
 }
 """
+#stylesheet for begin page, jose
+APP_STYLE = """
+QWidget {
+    background-color: #FFF5E5;
+}
+QPushButton {
+    background-color: #FC483D;
+    color: white;
+    font-size: 33px;
+    font-weight: 900;
+    border-radius: 30px;
+    padding: 14px 40px;
+}
+QPushButton:hover {
+    background-color: #434190;
+}
+QLineEdit {
+    padding: 10px;
+    font-size: 18px;
+    border-radius: 8px;
+    border: 2px solid #CBD5E0;
+    background-color: #fefefe;   
+    color: #000000;
+}
+"""
+
+APP_STYLE_LIGHT = """
+QWidget {
+    background-color: #FFF5E5;
+    color: #2d3436;
+}
+QPushButton {
+    background-color: #FC483D;
+    color: white;
+    font-size: 16px;
+    border-radius: 10px;
+    padding: 8px 16px;
+}
+QPushButton:hover {
+    background-color: #e6392d;
+}
+"""
+
+APP_STYLE_DARK = """
+QWidget {
+    background-color: #1e1e1e;
+    color: #f5f5f5;
+}
+QPushButton {
+    background-color: #3a3a3a;
+    color: white;
+    font-size: 16px;
+    border-radius: 10px;
+    padding: 8px 16px;
+}
+QPushButton:hover {
+    background-color: #505050;
+}
+"""
+
+MESSAGE_WARNING = """
+QMessageBox {
+    background-color: #FFF5E5;
+    font-size: 16px;
+}
+QLabel {
+    color: #FC483D
+}
+QPushButton {
+    background-color: #FC483D;
+    color: #FFF5E5;
+    padding: 6px 18px;
+    border-radius: 8px;
+    font-weight: bold;
+}
+QPushButton:hover {
+    background-color: #434190;
+}
+"""
+
+FONT_SUBTITLE = QFont("Rubik Mono", 16, QFont.Weight.Bold)
+FONT_LARGE_BOLD = QFont("Rubik Mono", 28, QFont.Weight.Bold)
+FONT_MEDIUM = QFont("Rubik Mono", 26, QFont.Weight.Medium)
+FONT_BUTTON = QFont("Rubik Mono", 18)
+FONT_LABEL = QFont("Rubik Mono", 24, QFont.Weight.Bold)
 
 def get_sidebar_styles():
     return {
@@ -1424,8 +1519,33 @@ def get_pomodoro_styles():
         "spin_box": """
             QSpinBox {
                 background-color: white;
+                border-radius: 8px;
+                padding: 8px;
+                font-size: 12px;
                 color: #2C3E50;
                 font-weight: bold;
+                min-width: 12px;
+            }
+            QSpinBox:focus {
+                background-color: #FFF8E1;
+            }
+            QSpinBox::up-button {
+                background-color: #C5DBF2;
+                border-radius: 3px;
+                width: 15px;
+            }
+            QSpinBox::down-button {
+                background-color: #C5DBF2;
+                border-radius: 3px;
+                width: 15px;
+            }
+            QSpinBox::up-arrow {
+                content: "▲";
+                color: black;          
+            }
+            QSpinBox::down-arrow {
+                 content: "▼";
+                 color: black;
             }
         """,
         
