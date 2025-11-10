@@ -92,64 +92,46 @@ class SettingsPage(QWidget):
         layout.addStretch()
         self.setLayout(layout)
 
-    # Setup music player with path helper
     def setup_music(self):
         try:
-            # Import your path helper
             from utils.path_helper import get_asset_path
             
-            # Get the correct path using your helper
             music_path = get_asset_path("bgmusic.mp3")
             
-            print(f"Looking for music at: {music_path}")  # Debug
-            
             if os.path.exists(music_path):
-                print("Music file found!")
                 self.music_output = QAudioOutput()
                 self.music_player = QMediaPlayer()
                 self.music_player.setAudioOutput(self.music_output)
                 self.music_player.setSource(QUrl.fromLocalFile(music_path))
                 self.music_output.setVolume(0.5)
                 
-                # Connect error handling
                 self.music_player.errorOccurred.connect(self.handle_music_error)
-                print("Music player setup successful")
             else:
-                print("Music file NOT found!")
-                print(f"Expected path: {music_path}")
-                # Check what's actually in the assets directory
-                assets_dir = os.path.dirname(music_path)
-                if os.path.exists(assets_dir):
-                else:
                 self.music_player = None
                 
-        except ImportError as e:
+        except ImportError:
             self.music_player = None
-        except Exception as e:
+        except Exception:
             self.music_player = None
 
     def handle_music_error(self, error):
-        if hasattr(self, 'music_player') and self.music_player:
+        pass
 
-    # Change volume when slider moves
     def change_volume(self, value):
         self.volume_label.setText(f"Volume: {value}%")
         if hasattr(self, 'music_output') and self.music_output:
             self.music_output.setVolume(value / 100.0)
 
-    # Toggle volume slider + background music
     def toggle_music(self, state):
         enabled = (state == Qt.CheckState.Checked.value)
         self.volume_slider.setEnabled(enabled)
 
         if hasattr(self, 'music_player') and self.music_player:
             if enabled:
-                # Set volume first, then play
                 self.music_output.setVolume(self.volume_slider.value() / 100.0)
                 self.music_player.play()
             else:
                 self.music_player.stop()
-        else:
 
     def choose_color(self):
         color = QColorDialog.getColor()
@@ -175,7 +157,6 @@ class SettingsPage(QWidget):
             f"Theme: {theme}\nFont Size: {font_size}\nBackground: {color}\nVolume: {volume}%"
         )
 
-    # Custom message box with success icon
     def show_success_message(self, title, message):
         msg = QMessageBox()
         msg.setWindowTitle(title)
@@ -183,12 +164,11 @@ class SettingsPage(QWidget):
         msg.setIcon(QMessageBox.Icon.NoIcon)
         msg.setStandardButtons(QMessageBox.StandardButton.Ok)
 
-        # Use path helper for icon too
         try:
             from utils.path_helper import get_icon_path
             icon_path = get_icon_path("success.png")
         except ImportError:
-            icon_path = "success.png"  # Fallback
+            icon_path = "success.png"
 
         if os.path.exists(icon_path):
             msg.setIconPixmap(QPixmap(icon_path).scaled(48, 48, Qt.AspectRatioMode.KeepAspectRatio))
@@ -216,5 +196,3 @@ class SettingsPage(QWidget):
         """)
 
         msg.exec()
-
-
