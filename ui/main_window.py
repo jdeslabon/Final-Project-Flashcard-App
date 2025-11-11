@@ -14,6 +14,8 @@ from PyQt6.QtCore import Qt
 # Import our page classes
 from ui.pages.home_page import HomePage
 from ui.pages.profile_page import ProfilePage
+from data.user_and_theme import AppData #BAGONG ADD (LOGIN)
+from ui.pages.accounts_page import AccountsPage #BAGONG ADD (LOGIN)
 from ui.pages.settings_page import SettingsPage
 from ui.pages.help_page import HelpPage
 from ui.pages.all_cards_page import AllCards
@@ -31,6 +33,7 @@ from ui.visual.styles.styles import get_sidebar_styles, get_main_window_styles, 
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
+        self.data = AppData() #BAGONG ADD (LOGIN)
         self.sidebar_collapsed = True
         self.sidebar_styles = get_sidebar_styles()
         self.main_styles = get_main_window_styles()
@@ -219,15 +222,15 @@ class MainWindow(QWidget):
         # Create instances of our separate page classes and pass main window reference
         self.home_page = HomePage(self)  # Pass self (MainWindow) as reference
         
-        def on_switch_account(): #added (LOGIN)
-            """Callback function that switches back to the WelcomePage."""
-            parent_stack = self.parent()
-            if parent_stack:
-                parent_stack.setCurrentIndex(0)  # 0 = WelcomePage in AppStack
-            print("User switched account → Returning to WelcomePage")
+        def on_switch_account():  # added, modified (LOGIN)
+            """Open the AccountsPage instead of WelcomePage."""
+            print("🔁 Switching account → opening AccountsPage")
+            self.pages_stack.setCurrentWidget(self.accounts_page)
+            self.accounts_page.refresh_list()
 
-        # Pass callback into ProfilePage, added (LOGIN)
-        self.profile_page = ProfilePage(self, on_switch_account)
+        #BAGONG ADD, MODIFIED (LOGIN)
+        self.profile_page = ProfilePage(self, on_switch_account) #BAGONG ADD (LOGIN)
+        self.accounts_page = AccountsPage(self.data, None, self.profile_page, self.fade_to_page) #BAGONG ADD (LOGIN)
         
         self.settings_page = SettingsPage()
         self.help_page = HelpPage()
@@ -242,12 +245,18 @@ class MainWindow(QWidget):
         self.pages_stack.addWidget(self.settings_page)     # index 2
         self.pages_stack.addWidget(self.all_cards_page)    # index 3
         self.pages_stack.addWidget(self.help_page)          # index 4
-        self.pages_stack.addWidget(self.create_flashcard_page) # index 5
-        self.pages_stack.addWidget(self.existing_flashcard_page) # index 6
-        self.pages_stack.addWidget(self.flashcard_study_page) # index 7
-        self.pages_stack.addWidget(self.multiple_choice_study_page) # index 8
-        self.setup_shortcut_flashcard()
+        self.pages_stack.addWidget(self.accounts_page) #BAGONG ADD (LOGIN) index 5
+        self.pages_stack.addWidget(self.create_flashcard_page) # index 6
+        self.pages_stack.addWidget(self.existing_flashcard_page) # index 7
+        self.pages_stack.addWidget(self.flashcard_study_page) # index 8
+        self.pages_stack.addWidget(self.multiple_choice_study_page) # index 9
         
+        self.setup_shortcut_flashcard()
+       
+    def fade_to_page(self, page): #BAGONG ADD (LOGIN)
+        """Simple transition helper."""
+        self.pages_stack.setCurrentWidget(page)
+         
     def setup_shortcut_flashcard(self):
             self.shortcut_quit = QShortcut(QKeySequence("Ctrl+Q"), self)
             self.shortcut_quit.setContext(Qt.ShortcutContext.ApplicationShortcut)
@@ -441,32 +450,23 @@ class MainWindow(QWidget):
       self.pages_stack.setCurrentIndex(next_index)
       
       
-    # --- USER PROFILE HANDLING --- (LOGIN)
+    #BAGONG ADD, MODIFIED (LOGIN)
     def load_user_profile(self, username):
-        """Receive the username from WelcomePage and load it into the profile page."""
+        """Load a user's profile using shared AppData."""
         if not username:
-            print("No username provided to load_user_profile.")
+            print("⚠️ No username provided to load_user_profile.")
             return
 
-        # Try to read the stored full name from the profiles file
-        full_name = username
-        try:
-            import json, os
-            path = "user_profiles.json"
-            if os.path.exists(path):
-                with open(path, "r") as f:
-                    all_profiles = json.load(f)
-                profile = all_profiles.get(username, {})
-                full_name = profile.get("full_name", username)
-        except Exception as e:
-            print(f"Warning: could not read user_profiles.json: {e}")
+        # Use AppData instead of raw file access
+        self.data.username = username
+        profile = self.data.get_profile(username)
+        full_name = profile.get("full_name", username)
 
-        # Now call the profile page loader, matching ProfilePage.load_profile signature
+        # Load the data into the ProfilePage UI
         if hasattr(self, "profile_page"):
             try:
-                # ProfilePage expects (username, full_name)
                 self.profile_page.load_profile(username, full_name)
-                # Ensure the profile page becomes visible in the pages stack
                 self.pages_stack.setCurrentWidget(self.profile_page)
+                print(f"👤 Loaded profile for: {username}")
             except Exception as e:
-                print(f"Error loading profile: {e}")
+                print(f"❌ Error loading profile: {e}")

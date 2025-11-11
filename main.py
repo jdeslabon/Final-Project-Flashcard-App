@@ -30,6 +30,8 @@ class AppStack(QStackedWidget):
         self.setStyleSheet("background-color: #FFF5E5")
         self.setWindowTitle("Remora")
         
+        self.selected_username = None
+        
         #pages for welcome page and main window
         self.welcome_page = WelcomePage(self)
         self.main_window = MainWindow()

@@ -4,12 +4,13 @@ from PyQt6.QtWidgets import (
     QLineEdit, QFormLayout, QSpinBox
 )
 
+
 # Profile Page for viewing and editing user profile settings updated (LOGIN)
 class ProfilePage(QWidget):
-    def __init__(self, main_window, on_switch_account):
-        super().__init__()
-        self.main_window = main_window
-        self.on_switch_account = on_switch_account
+    def __init__(self, parent=None, switch_account_callback=None):
+        super().__init__(parent)
+        self.switch_account_callback = switch_account_callback
+
         self.username = None
         self.setup_ui()
     
@@ -56,8 +57,11 @@ class ProfilePage(QWidget):
             "Are you sure you want to switch accounts?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
         )
+
         if reply == QMessageBox.StandardButton.Yes:
-            self.on_switch_account()
+            if callable(self.switch_account_callback):
+                self.switch_account_callback()
+
             
     def save_profile(self):
         """Save profile information to a local JSON file."""
@@ -88,6 +92,30 @@ class ProfilePage(QWidget):
 
     def load_profile(self, username, full_name):
         """Pre-fill name and display current logged-in user."""
+        import json, os
+
         self.username = username
         self.user_label.setText(f"Logged in as: {full_name} ({username})")
-        self.name_input.setText(full_name)
+
+        # Try to load existing profile data
+        path = "user_profiles.json"
+        if os.path.exists(path):
+            with open(path, "r") as f:
+                all_profiles = json.load(f)
+            profile = all_profiles.get(username, {})
+            self.name_input.setText(profile.get("full_name", full_name))
+            self.email_input.setText(profile.get("email", ""))
+            self.age_spinbox.setValue(profile.get("age", 0))
+        else:
+            # Default if file missing
+            self.name_input.setText(full_name)
+            self.email_input.clear()
+            self.age_spinbox.setValue(0)
+            
+    def switch_account(self):
+        """Go to the Accounts Page."""
+        if callable(self.switch_account_callback):
+            self.switch_account_callback()
+        else:
+            print("⚠️ switch_account_callback not set in ProfilePage")
+

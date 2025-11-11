@@ -147,6 +147,12 @@ class WelcomePage(QWidget):
     #removed create_name_page() (LOGIN)
     
     def switch_account(self): #added (LOGIN)
+        """Open the Accounts Page with updated data."""
+        # Refresh the list before showing AccountsPage (so it’s up-to-date)
+        if hasattr(self.accounts_page.widget, "refresh_list"):
+            self.accounts_page.widget.refresh_list()
+
+        # Fade or switch to the Accounts Page
         self.fade_to_page(self.accounts_page)
 
     #removed create_ask_page() (LOGIN)
@@ -327,3 +333,36 @@ class WelcomePage(QWidget):
             current.fade_out(target_page)
         else:
             self.stacked.setCurrentWidget(target_page)
+            
+    def fade_to_page(self, target_page): #ADDED, MODIFIED (LOGIN)
+        """Fade safely from the current page to the target page."""
+        current = self.stacked.currentWidget()
+
+        # Check if current has a fade_out method (FadeWidget)
+        if hasattr(current, "fade_out"):
+            current.fade_out(target_page)
+        else:
+            # If it's a raw QWidget, just set the new page directly
+            self.stacked.setCurrentWidget(target_page)
+
+        # Force update (avoid showing blank between transitions)
+        self.stacked.repaint()
+        
+    def showEvent(self, event): #ADDED (LOGIN)
+        """When WelcomePage is shown, check if an account was pre-selected."""
+        super().showEvent(event)
+        parent_stack = self.parent()
+        if parent_stack and getattr(parent_stack, "selected_username", None):
+            username = parent_stack.selected_username
+            parent_stack.selected_username = None  # clear after use
+
+            print(f"👤 Auto-login triggered for: {username}")
+            self.data.username = username
+
+            # Optional: Load full profile if available
+            profile = self.data.get_profile(username)
+            full_name = profile.get("full_name", username)
+
+            # Transition to main window
+            parent_stack.main_window.load_user_profile(username)
+            parent_stack.show_main_window()

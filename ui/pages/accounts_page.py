@@ -69,10 +69,6 @@ class AccountsPage(QWidget):
         # Load saved accounts
         self.refresh_list()
 
-    # ---------------------------------------
-    # Functional Methods
-    # ---------------------------------------
-
     def refresh_list(self):
         """Refresh the account list from shared data."""
         self.account_list.clear()
@@ -90,15 +86,37 @@ class AccountsPage(QWidget):
             QMessageBox.warning(self, "No Selection", "Please select an account first.")
             return
 
+        # Extract username
         username = item.text().replace(" (current)", "")
         self.data.username = username
-        print(f"🔄 Switched to account: {username}")
 
-        # Update profile page
-        if hasattr(self.profile_page.widget, "set_username"):
-            self.profile_page.widget.set_username(username)
+        # Load stored profile info
+        profile = self.data.get_profile(username)
+        full_name = profile.get("full_name", username)
 
-        self.fade_to_page(self.profile_page)
+        # Update the ProfilePage directly
+        if hasattr(self.profile_page, "load_profile"):
+            self.profile_page.load_profile(username, full_name)
+        else:
+            print("⚠️ Warning: ProfilePage has no 'load_profile' method")
+
+        # Optional: update display in the list
+        self.refresh_list()
+
+        print(f"✅ Switched to account: {username}")
+
+        # Smoothly fade to ProfilePage
+        #removed self.fade_to_page (LOGIN)
+        parent_stack = self.parent()
+        while parent_stack is not None and not hasattr(parent_stack, "setCurrentIndex"):
+            parent_stack = parent_stack.parent()
+
+        if parent_stack is not None:
+            print(f"👋 Returning to WelcomePage for selected account: {username}")
+            parent_stack.selected_username = username  # Pass username for next login
+            parent_stack.setCurrentIndex(0)  # Go to WelcomePage
+        else:
+            print("⚠️ Could not find AppStack — staying in current window.")
 
     def add_account(self):
         """Fade back to the login page to add a new account."""
@@ -107,7 +125,6 @@ class AccountsPage(QWidget):
         self.fade_to_page(self.login_page)
 
     def delete_account(self):
-        """Delete the selected account from the saved list."""
         item = self.account_list.currentItem()
         if not item:
             QMessageBox.warning(self, "No Selection", "Please select an account to delete.")
@@ -120,12 +137,11 @@ class AccountsPage(QWidget):
             f"Are you sure you want to delete '{username}'?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
         )
+
         if confirm == QMessageBox.StandardButton.Yes:
-            accounts = getattr(self.data, "accounts", [])
-            if username in accounts:
-                accounts.remove(username)
-                self.data.accounts = accounts
-                if username == self.data.username:
-                    self.data.username = None
-                self.refresh_list()
-                print(f"🗑️ Deleted account: {username}")
+            self.data.delete_account(username)
+            if username == self.data.username:
+                self.data.username = None
+            self.refresh_list()
+
+        self.fade_to_page(self.profile_page)
