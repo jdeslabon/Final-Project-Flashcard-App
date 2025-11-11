@@ -1,147 +1,158 @@
 # FINAL PROJECT FLASHCARD APP / ui / pages / help_page.py
 
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QTextEdit, QPushButton, QScrollArea
+from PyQt6.QtWidgets import (
+    QWidget, QVBoxLayout, QLabel, QPushButton, QScrollArea
+)
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
+
 
 class HelpPage(QWidget):
     def __init__(self, parent_window=None):
         super().__init__()
-        self.parent_window = parent_window  # optional for navigation
+        self.parent_window = parent_window
+        self.current_step = 0
         self.setup_ui()
-    
+        self.update_tutorial_step()
+
     def setup_ui(self):
-        # === Base Layout ===
+        """Set up the simple help & tutorial layout."""
         main_layout = QVBoxLayout(self)
-        main_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        main_layout.setContentsMargins(40, 30, 40, 30)
+        main_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        main_layout.setContentsMargins(40, 40, 40, 40)
         main_layout.setSpacing(20)
 
         # === Title ===
-        title = QLabel("📘 Help & Support")
+        title = QLabel("📘 Help & Tutorial")
+        title.setFont(QFont("Arial Rounded MT Bold", 28))
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        title.setFont(QFont("Arial Rounded MT Bold", 32))
-        title.setStyleSheet("color: #434190; letter-spacing: 2px; font-weight: bold;")
+        title.setStyleSheet("color: #434190; font-weight: bold; letter-spacing: 1px;")
         main_layout.addWidget(title)
 
-        # === Scrollable Help Text ===
+        # === Scrollable area (for tutorial steps) ===
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
-        scroll.setStyleSheet("""
-            QScrollArea {
-                border: none;
-                background-color: #FFF6E9;
-            }
-        """)
-        
-        content_widget = QWidget()
-        content_layout = QVBoxLayout(content_widget)
-        content_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        content_layout.setSpacing(20)
+        scroll.setStyleSheet("QScrollArea { border: none; background: transparent; }")
 
-        # === Section: Getting Started ===
-        intro = QLabel(
-            "<h2>🚀 Getting Started</h2>"
-            "<p>Welcome to <b>Remora</b> — your study companion that helps you learn faster using flashcards!</p>"
-            "<p>When you first open the app, you'll be guided through setup and an optional tutorial explaining key features.</p>"
-        )
-        intro.setWordWrap(True)
-        intro.setStyleSheet("color: #333; font-size: 15px;")
-        content_layout.addWidget(intro)
+        content = QWidget()
+        self.scroll_layout = QVBoxLayout(content)
+        self.scroll_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.scroll_layout.setSpacing(15)
 
-        # === Section: Creating Flashcards ===
-        create = QLabel(
-            "<h2>✏️ Creating Flashcards</h2>"
-            "<ul>"
-            "<li>Click <b>'Create Flashcard'</b> on the main page.</li>"
-            "<li>Type your question and answer, then click <b>Save Flashcard</b>.</li>"
-            "<li>Your flashcards will be saved under <b>'Saved Flashcards'</b>.</li>"
-            "</ul>"
-        )
-        create.setWordWrap(True)
-        create.setStyleSheet("color: #333; font-size: 15px;")
-        content_layout.addWidget(create)
+        # Tutorial labels
+        self.tutorial_title = QLabel()
+        self.tutorial_title.setFont(QFont("Arial Rounded MT Bold", 22))
+        self.tutorial_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.tutorial_title.setStyleSheet("color: #434190; font-weight: bold;")
 
-        # === Section: Studying Flashcards ===
-        study = QLabel(
-            "<h2>📚 Studying Flashcards</h2>"
-            "<ul>"
-            "<li>Choose <b>'Existing Flashcards'</b> to review pre-made topics.</li>"
-            "<li>Click on any topic (English, Math, Science, etc.) to start.</li>"
-            "<li>Click on a card to <b>flip</b> and reveal the answer.</li>"
-            "</ul>"
-        )
-        study.setWordWrap(True)
-        study.setStyleSheet("color: #333; font-size: 15px;")
-        content_layout.addWidget(study)
+        self.tutorial_desc = QLabel()
+        self.tutorial_desc.setWordWrap(True)
+        self.tutorial_desc.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.tutorial_desc.setFont(QFont("Arial", 13))
+        self.tutorial_desc.setStyleSheet("color: #555; padding: 0 40px;")
 
-        # === Section: Saved Flashcards ===
-        saved = QLabel(
-            "<h2>💾 Viewing Saved Flashcards</h2>"
-            "<p>All flashcards you create are available in the <b>Saved Flashcards</b> section."
-            " You can review them at any time — just click on a card to flip it and test yourself!</p>"
-        )
-        saved.setWordWrap(True)
-        saved.setStyleSheet("color: #333; font-size: 15px;")
-        content_layout.addWidget(saved)
+        self.scroll_layout.addStretch()
+        self.scroll_layout.addWidget(self.tutorial_title)
+        self.scroll_layout.addWidget(self.tutorial_desc)
+        self.scroll_layout.addStretch()
 
-        # === Section: Keyboard Shortcuts ===
-        shortcuts = QLabel(
-            "<h2>⌨️ Keyboard Shortcuts</h2>"
-            "<table style='border-collapse: collapse;'>"
-            "<tr><td style='padding:4px 12px;'><b>Ctrl + Q</b></td><td>Quit the app</td></tr>"
-            "<tr><td style='padding:4px 12px;'><b>Ctrl + S</b></td><td>Save data</td></tr>"
-            "<tr><td style='padding:4px 12px;'><b>Ctrl + F</b></td><td>Open flashcard section</td></tr>"
-            "<tr><td style='padding:4px 12px;'><b>Spacebar</b></td><td>Flip a flashcard</td></tr>"
-            "<tr><td style='padding:4px 12px;'><b>Ctrl + Enter</b></td><td>Save flashcard in 'Create' page</td></tr>"
-            "<tr><td style='padding:4px 12px;'><b>F1</b></td><td>Open this Help page</td></tr>"
-            "</table>"
-        )
-        shortcuts.setWordWrap(True)
-        shortcuts.setStyleSheet("color: #333; font-size: 15px;")
-        content_layout.addWidget(shortcuts)
-
-        # === Section: Theme Customization ===
-        theme = QLabel(
-            "<h2>🌙 Themes</h2>"
-            "<p>You can switch between <b>Light</b> and <b>Dark</b> mode anytime by clicking the "
-            "theme toggle button (<b>☀️ / 🌙</b>) at the top-right corner.</p>"
-        )
-        theme.setWordWrap(True)
-        theme.setStyleSheet("color: #333; font-size: 15px;")
-        content_layout.addWidget(theme)
-
-        # === Section: Need Help? ===
-        contact = QLabel(
-            "<h2>📩 Need More Help?</h2>"
-            "<p>If something doesn’t work or you’d like to suggest a feature, "
-            "feel free to contact the Remora development team.</p>"
-            "<p style='color:#434190; font-weight:bold;'>Email: remora.support@example.com</p>"
-        )
-        contact.setWordWrap(True)
-        contact.setStyleSheet("color: #333; font-size: 15px;")
-        content_layout.addWidget(contact)
-
-        scroll.setWidget(content_widget)
+        scroll.setWidget(content)
         main_layout.addWidget(scroll)
 
-        # === Back Button ===
-        back_btn = QPushButton("⬅ Back to Main")
-        back_btn.setFont(QFont("Arial Rounded MT Bold", 14))
-        back_btn.setStyleSheet("""
+        # === Navigation Buttons ===
+        btn_layout = QVBoxLayout()
+        btn_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.next_btn = QPushButton("Next ➜")
+        self.next_btn.setFont(QFont("Arial Rounded MT Bold", 14))
+        self.next_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #434190;
+                color: white;
+                padding: 8px 20px;
+                border-radius: 8px;
+            }
+            QPushButton:hover {
+                background-color: #6366F1;
+            }
+        """)
+        self.next_btn.clicked.connect(self.next_step)
+        btn_layout.addWidget(self.next_btn, alignment=Qt.AlignmentFlag.AlignCenter)
+
+        self.back_btn = QPushButton("⬅ Back to Main")
+        self.back_btn.setFont(QFont("Arial Rounded MT Bold", 14))
+        self.back_btn.setStyleSheet("""
             QPushButton {
                 background-color: #888;
                 color: white;
-                border-radius: 10px;
                 padding: 8px 20px;
+                border-radius: 8px;
             }
             QPushButton:hover {
                 background-color: #666;
             }
         """)
         if self.parent_window:
-            back_btn.clicked.connect(lambda: self.parent_window.help_page.fade_out(self.parent_window.main_page))
-        main_layout.addWidget(back_btn, alignment=Qt.AlignmentFlag.AlignCenter)
+            self.back_btn.clicked.connect(
+                lambda: self.parent_window.help_page.fade_out(self.parent_window.main_page)
+            )
+        btn_layout.addWidget(self.back_btn, alignment=Qt.AlignmentFlag.AlignCenter)
+
+        main_layout.addLayout(btn_layout)
+        self.setLayout(main_layout)
+
+        # Background color
+        self.setStyleSheet("background-color: #FFF6E9;")
+
+    def update_tutorial_step(self):
+        """Update tutorial content based on the current step (from WelcomePage logic)."""
+        steps = [
+            {
+                "title": "Adding Flashcards",
+                "desc": (
+                    "Click the <b>'Create Flashcard'</b> button in the main screen to add a new flashcard.<br>"
+                    "Type your question and answer, then click <b>Save Flashcard</b> to store it."
+                )
+            },
+            {
+                "title": "Navigating the App",
+                "desc": (
+                    "Use the sidebar ☰ to explore different areas:<br>"
+                    "🏠 Home – See your flashcards<br>"
+                    "📚 Topics – Choose subjects to study<br>"
+                    "✏️ Create – Make your own cards<br>"
+                    "💾 Saved – Review what you've created"
+                )
+            },
+            {
+                "title": "Using Existing Flashcards",
+                "desc": (
+                    "Select a topic (like English, Math, or Science) to begin studying.<br>"
+                    "Click any flashcard to flip it and reveal the answer."
+                )
+            }
+        ]
+
+        step = steps[self.current_step]
+        self.tutorial_title.setText(step["title"])
+        self.tutorial_desc.setText(step["desc"])
+
+        # Update button text
+        if self.current_step < len(steps) - 1:
+            self.next_btn.setText("Next ➜")
+        else:
+            self.next_btn.setText("Finish ✅")
+
+    def next_step(self):
+        """Advance to next tutorial step or go back."""
+        self.current_step += 1
+        if self.current_step < 3:
+            self.update_tutorial_step()
+        else:
+            # Return to main page when done
+            if self.parent_window:
+                self.parent_window.help_page.fade_out(self.parent_window.main_page)
+
 
         # === Background ===
         self.setStyleSheet("background-color: #FFF6E9;")
