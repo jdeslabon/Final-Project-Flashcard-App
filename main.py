@@ -21,10 +21,20 @@ from ui.pages.bootup_page import BootupPage
 from ui.pages.welcome_page import WelcomePage
 from ui.main_window import MainWindow
 from utils.path_helper import get_asset_path
+from PyQt6.QtGui import QPalette, QColor
 
 def main():
     app = QApplication(sys.argv)
+
+
     app.setWindowIcon(QIcon(get_asset_path("AppIcon.png")))
+
+    # KILL PURPLE SELECTION
+    palette = QPalette()
+    palette.setColor(QPalette.ColorRole.Highlight, QColor("#B4D7FF"))
+    palette.setColor(QPalette.ColorRole.HighlightedText, QColor("#000000"))
+    app.setPalette(palette)
+
 
     # Create main window but don’t show yet
     main_window = MainWindow()

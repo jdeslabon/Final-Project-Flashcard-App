@@ -27,6 +27,7 @@ from ui.pages.flashcard_study_multiple_choice_page import MultipleChoiceStudy
 from ui.visual.animations import SidebarAnimations
 from ui.visual.styles.styles import get_sidebar_styles, get_main_window_styles
 
+
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()

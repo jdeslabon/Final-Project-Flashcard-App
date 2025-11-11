@@ -212,7 +212,8 @@ def get_create_flashcard_styles():
                 color: #A2A8D3;
                 padding: 10px 0;
                 background-color: transparent;
-                text-align: center;
+                text-align: center
+
             }
         """,
 
@@ -224,12 +225,10 @@ def get_create_flashcard_styles():
                 padding: 12px;
                 border-radius: 20px;
                 margin: 8px 5px;
-                color: white;
+                color: black;
                 min-height: 50px;
-                selection-background-color: #E7E7E7;
             }
             QLineEdit:focus {
-                background-color: #FFF9F9;
                 color: #2C3E50;
             }
         """,
@@ -289,7 +288,7 @@ def get_create_flashcard_styles():
                 font-size: 14px;
                 color: #2C3E50;
                 font-weight: 500;
-                selection-background-color: #E7E7E7;
+                border-radius: 12px;
             }
         """,
 
@@ -301,7 +300,6 @@ def get_create_flashcard_styles():
                 font-size: 14px;
                 color: #2C3E50;
                 font-weight: 500;
-                selection-background-color: #E7E7E7;
                 min-height: 60px;
             }
             QTextEdit:focus {
@@ -952,225 +950,8 @@ def get_study_page_styles():
             }
         """
     }
-    return {
-        "title": """
-            QLabel {
-                font-size: 24px;
-                font-weight: 900;
-                color: #A2A8D3;
-                padding: 12px 0;
-                background-color: transparent;
-                border: none;
-            }
-        """,
-        
-        "progress_bar": """
-            QProgressBar {
-                border-radius: 10px;
-                text-align: center;
-                background-color: #313244;
-                height: 20px;
-            }
-            QProgressBar::chunk {
-                background-color: #A6E3A1;
-                border-radius: 8px;
-            }
-        """,
-        
-        "stats_label": """
-            QLabel {
-                color: #CDD6F4;
-                font-size: 14px;
-                font-weight: 600;
-                background-color: transparent;
-            }
-        """,
-        
-        "card_counter": """
-            QLabel {
-                color: #9C9191;
-                font-size: 14px;
-                font-weight: 600;
-                background-color: transparent;
-                margin: 0px;
-                padding: 1px 6px;
-            }
-        """,
-        
-        "shuffle_button": """
-            QPushButton {
-                background-color: #585B70;
-                color: #CDD6F4;
-                font-size: 14px;
-                font-weight: 600;
-                border-radius: 12px;
-                padding: 10px 16px;
-                min-height: 40px;
-                min-width: 120px;
-                margin: 5px;
-            }
-            QPushButton:hover {
-                background-color: #6C7086;
-            }
-            QPushButton:pressed {
-                background-color: #45475A;
-            }
-        """,
-        
-        "correct_button": """
-            QPushButton {
-                background-color: #A6E3A1;
-                color: #1E1E2E;
-                font-size: 14px;
-                font-weight: 700;
-                border-radius: 12px;
-                padding: 12px 20px;
-                min-height: 45px;
-                min-width: 100px;
-                margin: 5px;
-            }
-            QPushButton:hover {
-                background-color: #94E2D5;
-            }
-            QPushButton:pressed {
-                background-color: #89DCEB;
-            }
-        """,
-        
-        "wrong_button": """
-            QPushButton {
-                background-color: #F38BA8;
-                color: #1E1E2E;
-                font-size: 14px;
-                font-weight: 700;
-                border-radius: 12px;
-                padding: 12px 20px;
-                min-height: 45px;
-                min-width: 100px;
-                margin: 5px;
-            }
-            QPushButton:hover {
-                background-color: #F5C2E7;
-            }
-            QPushButton:pressed {
-                background-color: #CBA6F7;
-            }
-        """,
-        
-        "reset_button": """
-            QPushButton {
-                background-color: #585B70;
-                color: #CDD6F4;
-                font-size: 14px;
-                font-weight: 600;
-                border-radius: 12px;
-                padding: 10px 16px;
-                min-height: 40px;
-                min-width: 120px;
-                margin: 5px;
-            }
-            QPushButton:hover {
-                background-color: #6C7086;
-            }
-            QPushButton:pressed {
-                background-color: #45475A;
-            }
-        """,
-        
-        "back_button": """
-            QPushButton {
-                background-color: #F38BA8;
-                color: #1E1E2E;
-                font-size: 14px;
-                font-weight: 700;
-                border-radius: 12px;
-                padding: 10px 16px;
-                min-height: 40px;
-                min-width: 120px;
-                margin: 5px;
-            }
-            QPushButton:hover {
-                background-color: #F5C2E7;
-            }
-            QPushButton:pressed {
-                background-color: #CBA6F7;
-            }
-        """,
-        
-        "filter_checkbox": """
-            QCheckBox {
-                color: #CDD6F4;
-                font-size: 14px;
-                background-color: transparent;
-            }
-            QCheckBox::indicator {
-                width: 16px;
-                height: 16px;
-                border-radius: 4px;
-                background-color: #313244;
-            }
-            QCheckBox::indicator:checked {
-                background-color: #A6E3A1;
-            }
-        """,
-        
-        "card_front": """
-            QFrame {
-                background-color: #FDE4E0;
-                border-radius: 20px;
-                padding: 30px;
-            }
-        """,
-        
-        "card_back": """
-            QFrame { 
-                background-color: #FDE4E0;
-                border-radius: 20px;
-                padding: 30px;
-            }
-        """,
-        
-        "card_text": """
-            QLabel {
-                color: black;
-                font-size: 24px;
-                background-color: transparent;
-            }
-        """,
 
-        "hint_button": """
-            QPushButton {
-                background-color: #C3DCF4;
-                color: black;
-                border-radius: 8px;
-                padding: 8px 16px;
-                font-size: 14px;
-                font-weight: 700;
-                min-height: 40px;
-                min-width: 120px;
-            }
-            QPushButton:hover {
-                background-color: #9CC5EC;
-            }
-            QPushButton:pressed {
-                background-color: #76AFE5;
-            }
-        """,
-        "hint_text": """
-            QLabel {
-                color: black;
-                font-size: 30px;
-                font-weight: 700;
-                border-radius: 12px;
-                padding: 12px 20px;
-                min-height: 20px;
-                min-width: 100px;
-                margin: 5px;
-                background-color: #F8CF8D;
-            }
-        """
-    }   
-              
+
 def get_multiple_choice_styles():
     return {
         "header_frame": """
@@ -1385,7 +1166,6 @@ def get_existing_flashcard_styles():
             }
         """,
     }
-    # Add this to your styles.py file
 
 
 def get_pomodoro_styles():
@@ -1521,7 +1301,6 @@ def get_pomodoro_styles():
                 background-color: white;
                 color:black;
             }
-
         """,
         
         "settings_info": """
@@ -1563,7 +1342,9 @@ def get_pomodoro_styles():
             QPushButton:hover {
                 background-color: #C0392B;
             }
-        ""","warning_message_box": """
+        """,
+        
+        "warning_message_box": """
             QMessageBox {
                 background-color: #FEF5E7;
                 border-radius: 15px;
@@ -1587,3 +1368,21 @@ def get_pomodoro_styles():
             }
         """
     }
+
+def get_global_selection_fix():
+    return """
+        *::selection { 
+            background-color: #B4D7FF; 
+            color: black; 
+        }
+        *:selected { 
+            background-color: #B4D7FF; 
+            color: black; 
+        }
+        QLineEdit::selected-text { 
+            background-color: #B4D7FF; 
+        }
+        QTextEdit::selected-text { 
+            background-color: #B4D7FF; 
+        }
+    """
