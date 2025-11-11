@@ -13,6 +13,9 @@ from ui.visual.styles.styles import (
 from ui.visual.animations import FadeWidget
 from data.user_and_theme import AppData
 from utils.path_helper import get_asset_path
+from ui.pages.login_page import LoginPage #added (LOGIN)
+from ui.pages.profile_page import ProfilePage #added (LOGIN)
+from ui.pages.accounts_page import AccountsPage #added (LOGIN)
 
 class WelcomePage(QWidget):
     def __init__(self, app):
@@ -41,11 +44,13 @@ class WelcomePage(QWidget):
         
         # Pages
         self.start_page = FadeWidget(self.create_start_page(), self)
-        self.name_page = FadeWidget(self.create_name_page(), self)
+        self.login_page = FadeWidget(LoginPage(self.show_greet), self) #replaced, all self.name_page replaced with self.login_page (LOGIN)
         self.greet_page = FadeWidget(QLabel(alignment=Qt.AlignmentFlag.AlignCenter), self)
         self.greet_page.widget.setFont(FONT_MEDIUM)
         self.welcome_page = FadeWidget(self.create_welcome_page(), self)
-        self.ask_page = FadeWidget(self.create_ask_page(), self)
+        #removed self.ask_page (LOGIN)
+        
+        self.profile_page = FadeWidget(ProfilePage(self, self.switch_account), self) #switch account to login page (LOGIN)
         
         self.main_page = FadeWidget(QWidget(), self)
         
@@ -55,18 +60,23 @@ class WelcomePage(QWidget):
         self.welcome_back_page = FadeWidget(QLabel(alignment=Qt.AlignmentFlag.AlignCenter), self)
         self.welcome_back_page.widget.setFont(FONT_MEDIUM)
 
-        for page in [self.start_page, self.name_page, self.greet_page, self.welcome_page, self.ask_page, self.main_page]:
-            self.stacked.addWidget(page)
+        #ADDED ACCOUNTS PAGE (LOGIN)
+        self.accounts_page = FadeWidget(
+            AccountsPage(self.data, self.login_page, self.profile_page, self.fade_to_page),
+            self
+        )
+        self.stacked.addWidget(self.accounts_page)
+
+        for page in [self.start_page, self.login_page, self.greet_page, self.welcome_page, self.main_page, self.profile_page]: #removed self.ask_page (LOGIN)
+            self.stacked.addWidget(page) #added profile page (LOGIN)
             
         self.stacked.addWidget(self.tutorial_page)
         self.stacked.addWidget(self.welcome_back_page)
         
         # Connections
-        self.start_btn.clicked.connect(lambda: self.start_page.fade_out(self.name_page))
-        self.submit_name_btn.clicked.connect(self.show_greet)
+        self.start_btn.clicked.connect(lambda: self.start_page.fade_out(self.login_page)) #replaced self.name_page with self.login_page (LOGIN)
         
-        self.yes_btn.clicked.connect(self.show_tutorial)
-        self.no_btn.clicked.connect(self.show_welcome_back)
+        #removed yes and no btn (LOGIN)
 
         # Start page
         self.stacked.setCurrentWidget(self.start_page)
@@ -134,51 +144,12 @@ class WelcomePage(QWidget):
         
         return widget
 
-    def create_name_page(self):
-        widget = QWidget()
-        layout = QVBoxLayout(widget)
-        
-        self.name_label = QLabel("ENTER YOUR NAME")
-        self.name_label.setFont(FONT_SUBTITLE)
-        self.name_label.setStyleSheet("color: #434190")
-        self.name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        
-        self.name_input = QLineEdit()
-        self.name_input.setPlaceholderText("Type it here...")
-        
-        self.name_input.repaint()
-        self.name_input.setFont(FONT_SUBTITLE)
-        
-        self.submit_name_btn = QPushButton("Next")
-        self.submit_name_btn.setFont(FONT_BUTTON)
-        self.name_input.returnPressed.connect(self.show_greet)
-        
-        layout.addStretch()
-        layout.addWidget(self.name_label, alignment=Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(self.name_input, alignment=Qt.AlignmentFlag.AlignCenter)
-        layout.addSpacing(15)
-        layout.addWidget(self.submit_name_btn, alignment=Qt.AlignmentFlag.AlignCenter)
-        layout.addStretch()
-        
-        return widget
+    #removed create_name_page() (LOGIN)
+    
+    def switch_account(self): #added (LOGIN)
+        self.fade_to_page(self.accounts_page)
 
-    def create_ask_page(self):
-        widget = QWidget()
-        layout = QVBoxLayout(widget)
-        self.ask_label = QLabel("New here?")
-        self.ask_label.setFont(FONT_LABEL)
-        self.ask_label.setStyleSheet("color: #434190")
-        self.ask_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.yes_btn = QPushButton("Yes")
-        self.no_btn = QPushButton("No")
-        self.yes_btn.setFont(FONT_BUTTON)
-        self.no_btn.setFont(FONT_BUTTON)
-        layout.addStretch()
-        layout.addWidget(self.ask_label)
-        layout.addWidget(self.yes_btn, alignment=Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(self.no_btn, alignment=Qt.AlignmentFlag.AlignCenter)
-        layout.addStretch()
-        return widget
+    #removed create_ask_page() (LOGIN)
     
     def create_tutorial_page(self):
         widget = QWidget()
@@ -216,10 +187,7 @@ class WelcomePage(QWidget):
     
         return widget
 
-    def show_tutorial(self):
-        self.current_tutorial_step = 0
-        self.ask_page.fade_out(self.tutorial_page)
-        self.update_tutorial_step()
+    #REMOVED show_tutorial() (LOGIN)
         
     def update_tutorial_step(self):
         """Update tutorial content based on current step"""
@@ -258,39 +226,64 @@ class WelcomePage(QWidget):
             # End tutorial and go to main page
             self.tutorial_page.fade_out(None, on_finish=self.app.show_main_window)
 
-    def show_welcome_back(self):
-        """Show personalized welcome back message before main content"""
-        name = self.data.username or "User"
-        self.welcome_back_page.widget.setText(f"Welcome back, {name}!")
-        self.welcome_back_page.widget.setStyleSheet("color: #434190; font-weight: bold;")
-
-        # Fade out 'ask_page' and fade in the welcome-back page
-        self.ask_page.fade_out(self.welcome_back_page)
-
-        # After 1.5 seconds, fade out welcome-back and show main window
+    def show_welcome_back(self, username): #changed (LOGIN)
+        """Show a short welcome-back message before going to the main window."""
+        self.welcome_back_page.widget.setText(f"Welcome back, {username}! 👋")
+        self.welcome_back_page.widget.setStyleSheet("color: #434190;")
+        
+        # Fade from greet → welcome back
+        self.greet_page.fade_out(self.welcome_back_page)
+        
+        # After a short delay, go to the main app
         QTimer.singleShot(1500, lambda: self.welcome_back_page.fade_out(None, on_finish=self.app.show_main_window))
 
-        
-    def show_greet(self):
-        name = self.name_input.text().strip()
-        
-        if not name:
-            msg = QMessageBox()
-            msg.setIcon(QMessageBox.Icon.Warning)
-            msg.setWindowTitle("Missing Name")
-            msg.setFont(FONT_SUBTITLE)
-            msg.setWindowIcon(QIcon(get_asset_path("!.png")))
-            msg.setText("Enter your name before continuing.")
-            msg.setStandardButtons(QMessageBox.StandardButton.Ok)
-            msg.setStyleSheet(MESSAGE_WARNING)
-            msg.exec()
-            return
-    
+    def show_greet(self, username=None, is_new=False): #changed (LOGIN)
+        """Called after login or registration success."""
+        name = username or "User"
         self.data.username = name
+
+        # Load full name for profile display
+        full_name = self.get_full_name(name)
+        self.profile_page.widget.load_profile(name, full_name)
+
+        # Show greeting message
         self.greet_page.widget.setText(f"Hi, {name}!")
         self.greet_page.widget.setStyleSheet("color: #434190")
-        self.name_page.fade_out(self.greet_page)
-        QTimer.singleShot(1000, lambda: self.show_welcome())
+        self.login_page.fade_out(self.greet_page)
+
+        # After greeting, decide what to show next
+        if is_new:
+            QTimer.singleShot(1000, lambda: self.start_tutorial(username))
+        else:
+            QTimer.singleShot(1000, lambda: self.show_welcome_back(username))
+
+        
+    def start_tutorial(self, username): #added (LOGIN)
+        """Start tutorial automatically for new users."""
+        self.current_tutorial_step = 0
+        self.greet_page.fade_out(self.tutorial_page)
+        self.update_tutorial_step()
+        
+    def open_main_profile(self, username): #added (LOGIN)
+        """Switch to the main window's Profile Page after login."""
+        try:
+            # Use the app reference (AppStack)
+            if hasattr(self.app, "show_main_window"):
+                self.app.show_main_window()  # triggers fade-in animation correctly
+            else:
+                print("⚠️ AppStack reference not found.")
+        except Exception as e:
+            print(f"Error opening main profile: {e}")
+            
+    def get_full_name(self, username): #added (LOGIN)
+        """Get the user's full name from saved profile data."""
+        import json, os
+        path = "user_profiles.json"
+        if os.path.exists(path):
+            with open(path, "r") as f:
+                data = json.load(f)
+            return data.get(username, {}).get("full_name", username)
+        return username
         
     def create_welcome_page(self):
         widget = QWidget()
@@ -326,3 +319,11 @@ class WelcomePage(QWidget):
     def show_welcome(self):
         self.greet_page.fade_out(self.welcome_page)
         QTimer.singleShot(1500, lambda: self.welcome_page.fade_out(self.ask_page))
+    
+    def fade_to_page(self, target_page): #added (login)
+        """Fade from the current stacked page to the target page."""
+        current = self.stacked.currentWidget()
+        if hasattr(current, "fade_out"):
+            current.fade_out(target_page)
+        else:
+            self.stacked.setCurrentWidget(target_page)

@@ -43,14 +43,15 @@ class AppStack(QStackedWidget):
         
     def show_main_window(self):
         """Switch from welcome page to the main window page"""
-        self.setCurrentWidget(self.main_window)
-        
+        #load user profile if username exists (LOGIN)
+        username = getattr(self.welcome_page.data, "username", None)
+        if username:
+            self.main_window.load_user_profile(username)
+            
         #animation
         self.setCurrentWidget(self.main_window)
-        self.fade_anim = FadeInMainWindow(self.main_window, duration=600)
+        self.fade_anim = FadeInMainWindow(self.main_window, duration=800)
         self.fade_anim.fade_in()
-        self.main_window.show_page(0)
-        
         self.main_window.show_page(0)
          
 #bootup page setup   
